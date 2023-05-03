@@ -1,12 +1,9 @@
-from flask import Flask
+from flask import Flask,request, abort
 app = Flask(__name__)
 
 import requests
-from bs4 import BeautifulSoup
 import bs4
-from flask import request, abort
 from linebot.exceptions import InvalidSignatureError
-from linebot.models import TextSendMessage
 from linebot import LineBotApi, WebhookHandler
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from datetime import datetime
@@ -54,7 +51,7 @@ def get_gold_price():
         #print(f'{name}: {price.split()[0]}')
         message += f'{name}: {price.split()[0]}\n'
         
-    return message
+    return f'黃金存摺 每 1 公克 (新臺幣元)\n{gold_time_element}\n{message}'
 
 # 抓取匯率
 exchange_rate_res = requests.get(exchange_url, headers)
@@ -238,7 +235,7 @@ def handle_message(event):
     
     elif msg_text == '黃金' or msg_text == '金':
         reply_text = get_gold_price()
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text='黃金存摺 每 1 公克 (新臺幣元)\n'+ gold_time_element + '\n' + reply_text))
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
     
     # 判斷是否為縣市名稱，如果是，則呼叫 get_delicacy_food 函式取得訊息
     # 使用[endswith] 表示以 "市" 或 "縣"結尾
@@ -258,4 +255,5 @@ def handle_message(event):
         
 
 if __name__ == "__main__":
+    # app.run(host='0.0.0.0', port=8080)
     app.run()
